@@ -43,8 +43,8 @@ class MainActivity : ComponentActivity() {
         println("start MainActivity async task")
         val mutex = Mutex()
         // runBlocking{}は、同期的に動くので、後続の処理はrunBlocking{}が終了するのを待つ
-        runBlocking {
-            repeat(3) {
+        repeat(50) {
+            runBlocking {
                 launch(Dispatchers.IO) {
                     mutex.withLock {
                         println("$it thread name: ${Thread.currentThread().name}")

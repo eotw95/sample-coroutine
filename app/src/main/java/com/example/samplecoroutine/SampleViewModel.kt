@@ -11,8 +11,8 @@ class SampleViewModel:ViewModel() {
     fun asyncTask() {
         println("start SampleViewModel async task")
         // viewModelScope.launch{}は非同期的に動くので、処理の完了を待たずに後続の処理を実行する
-        viewModelScope.launch {
-            repeat(3) {
+        repeat(50) {
+            viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     println("$it thread name: ${Thread.currentThread().name}")
                     println("start thread number: $it")
