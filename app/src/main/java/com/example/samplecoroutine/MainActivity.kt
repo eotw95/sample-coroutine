@@ -29,32 +29,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // first async task
                     asyncTask()
-
-                    // second async task
-                    viewModel.asyncTask()
+                    syncTask()
                 }
             }
         }
     }
 
     private fun asyncTask() {
-        println("start MainActivity async task")
-        val mutex = Mutex()
-        // runBlocking{}は、同期的に動くので、後続の処理はrunBlocking{}が終了するのを待つ
+        println("start async task")
         repeat(50) {
             runBlocking {
-                launch(Dispatchers.IO) {
-                    mutex.withLock {
-                        println("$it thread name: ${Thread.currentThread().name}")
-                        println("start thread number: $it")
-                        delay(1000)
-                        println("end thread number: $it")
-                    }
+                println("■■■■■■■■■■■■")
+                launch {
+                    println("step 1")
+                    delay(1000)
+                    println("step 2")
                 }
+                launch {
+                    println("step 3")
+                }
+                println("■■■■■■■■■■■■")
             }
         }
-        println("end MainActivity async task")
+    }
+    private fun syncTask() {
+        println("start sync task")
+        repeat(50) {
+            runBlocking {
+                println("■■■■■■■■■■■■")
+                launch {
+                    println("step 1")
+                    Thread.sleep(500)
+                    println("step 2")
+                }
+                launch {
+                    println("step 3")
+                }
+                println("■■■■■■■■■■■■")
+            }
+        }
     }
 }
