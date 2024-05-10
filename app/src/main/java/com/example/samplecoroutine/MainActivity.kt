@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.samplecoroutine.ui.theme.SampleCoroutineTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -30,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     asyncTask()
-                    syncTask()
+//                    syncTask()
                 }
             }
         }
@@ -38,19 +39,21 @@ class MainActivity : ComponentActivity() {
 
     private fun asyncTask() {
         println("start async task")
-        repeat(50) {
-            runBlocking {
-                println("■■■■■■■■■■■■")
-                launch {
-                    println("step 1")
-                    delay(1000)
-                    println("step 2")
-                }
-                launch {
-                    println("step 3")
-                }
-                println("■■■■■■■■■■■■")
+        runBlocking {
+            val deferred1 = async {
+                println("async 1")
+                1
             }
+            val deferred2 = async {
+                println("async 2")
+                1
+            }
+
+            val value1 = deferred1.await()
+            val value2 = deferred2.await()
+
+            println("finish")
+            println("result=${value1 + value2}")
         }
     }
     private fun syncTask() {
