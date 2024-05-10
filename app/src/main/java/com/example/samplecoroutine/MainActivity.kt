@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.samplecoroutine.ui.theme.SampleCoroutineTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.EmptyCoroutineContext
 
 class MainActivity : ComponentActivity() {
     val viewModel = SampleViewModel()
@@ -54,6 +56,21 @@ class MainActivity : ComponentActivity() {
 
             println("finish")
             println("result=${value1 + value2}")
+        }
+    }
+    private fun asyncTask2() {
+        // CoroutineContextには、Coroutineを実行するスレッド(Dispatchers.Default)の種類の情報を持たせることができる
+        val context1 = EmptyCoroutineContext
+        val scope1 = CoroutineScope(context1)
+        scope1.launch {
+            // EmptyCoroutineContextはデフォルトのスレッド(バックグランドスレッド)を指定する
+        }
+
+        // Dispatchers.Main
+        val context2 = Dispatchers.Main
+        val scope2 = CoroutineScope(context2)
+        scope2.launch {
+            // Dispatchers.MainなのでUIスレッドで実行
         }
     }
     private fun syncTask() {
