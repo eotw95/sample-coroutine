@@ -13,7 +13,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.samplecoroutine.ui.theme.SampleCoroutineTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -72,6 +74,18 @@ class MainActivity : ComponentActivity() {
         scope2.launch {
             // Dispatchers.MainなのでUIスレッドで実行
         }
+
+        // JobもCoroutineContextの1種で、併用できる。Dispatchers.Main + Job
+        val context3 = Dispatchers.Main + Job()
+        val scope3 = CoroutineScope(context3)
+        scope3.launch {
+            // Dispatchers.MainなのでUIスレッドで実行
+            println("start")
+            delay(1000)
+            println("finish")
+        }
+        // context3を利用しているCoroutineScopeは全てキャンセルされる
+        context3.cancel()
     }
     private fun syncTask() {
         println("start sync task")
