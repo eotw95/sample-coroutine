@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    asyncTask()
+                    asyncTask4()
 //                    syncTask()
                 }
             }
@@ -109,6 +109,17 @@ class MainActivity : ComponentActivity() {
                 delay(1000)
                 println("finish step2")
             }
+        }
+    }
+    private fun asyncTask4() {
+        val exception = CoroutineExceptionHandler { _, e ->
+            println("catch by exception handler : $e")
+        }
+        val context = Job() + exception
+        val scope = CoroutineScope(context)
+        scope.launch {
+            val deferred = async { throw Exception("error") }
+            try { deferred.await() } catch (e: Exception) { println("catch exception by await") }
         }
     }
     private fun syncTask() {
