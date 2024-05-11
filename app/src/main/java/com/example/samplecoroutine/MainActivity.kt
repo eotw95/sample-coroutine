@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.samplecoroutine.ui.theme.SampleCoroutineTheme
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -21,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 class MainActivity : ComponentActivity() {
@@ -86,6 +89,27 @@ class MainActivity : ComponentActivity() {
         }
         // context3を利用しているCoroutineScopeは全てキャンセルされる
         context3.cancel()
+    }
+    private fun asyncTask3() {
+        val exception = CoroutineExceptionHandler{ _, e ->
+            println("exception: $e")
+        }
+        val context = SupervisorJob() + exception
+        val parentScope = CoroutineScope(context)
+        parentScope.launch {
+            // thisはlaunch{}によって新たに作成された子CoroutineScopeでSupervisorJob()ではなく、Job()インスタンスを持っている
+            // → Job()なので、片方のCoroutineでExceptionをCatchした瞬間に、もう片方のCoroutineもキャンセルされる
+            this.launch {
+                println("step 1")
+                delay(500)
+                throw Exception("error")
+            }
+            this.launch {
+                println("step2")
+                delay(1000)
+                println("finish step2")
+            }
+        }
     }
     private fun syncTask() {
         println("start sync task")
