@@ -144,12 +144,13 @@ class MainActivity : ComponentActivity() {
     private fun asyncTask6() {
         val scope = CoroutineScope(EmptyCoroutineContext)
         scope.launch {
-            retryOrNull(10, 100L) { suspendTask() }
+            retryOrNull(10, 100L) { suspendTask() } ?: println("何かしらのデフォルト実装")
         }
     }
     private suspend fun <T>retryOrNull(
         retry: Int,
         intervalMills: Long,
+        predicate: suspend (Throwable) -> Boolean = { true }, // predicateはプログラミングの文脈で、引数を通して何かしらの判定処理を表す関数
         block: suspend () -> T
     ): T? {
         repeat(retry) {
@@ -159,7 +160,8 @@ class MainActivity : ComponentActivity() {
                 // coroutineをキャンセルしたい場合は、再throwしないとException発生しない
                 throw e
             } catch (e: Throwable) {
-                delay(intervalMills)
+                // predicateでfalseの場合はnull返して終了させる、trueの場合はrepeatする
+                if (!predicate(e)) return null else delay(intervalMills)
             }
         }
         return null
