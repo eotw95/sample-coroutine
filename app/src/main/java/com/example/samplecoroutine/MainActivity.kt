@@ -1,6 +1,7 @@
 package com.example.samplecoroutine
 
 import android.os.Bundle
+import android.provider.ContactsContract.Data
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
@@ -22,12 +24,15 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class MainActivity : ComponentActivity() {
     val viewModel = SampleViewModel()
@@ -147,6 +152,28 @@ class MainActivity : ComponentActivity() {
             retryOrNull(10, 100L) { suspendTask() } ?: println("何かしらのデフォルト実装")
         }
     }
+    suspend fun fetchDataSuspend(): Data {
+        return suspendCancellableCoroutine {
+            val task = fetchDataCallback(object : onDataListener<Data> {
+                override fun onSuccess(data: Data) {
+                    it.resume(data)
+                }
+
+                override fun onFailure(e: Throwable) {
+                    it.resumeWithException(e)
+                }
+            })
+            it.invokeOnCancellation { task.cancel() }
+        }
+    }
+    interface onDataListener<T> {
+        fun onSuccess(data: T)
+        fun onFailure(e: Throwable)
+    }
+    class Task() {
+        fun cancel() {}
+    }
+    private fun fetchDataCallback(onDataListener: onDataListener<Data>): Task { return Task() }
     private suspend fun <T>retryOrNull(
         retry: Int,
         intervalMills: Long,
