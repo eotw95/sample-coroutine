@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -37,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    asyncTask4()
+                    asyncTask5()
 //                    syncTask()
                 }
             }
@@ -121,6 +123,22 @@ class MainActivity : ComponentActivity() {
             val deferred = async { throw Exception("error") }
             try { deferred.await() } catch (e: Exception) { println("catch exception by await") }
         }
+    }
+
+    private fun asyncTask5() {
+        val scope = CoroutineScope(EmptyCoroutineContext)
+        scope.launch {
+            try {
+                // suspend関数の処理がtimeoutしたらTimeoutCancellationExceptionをスローする
+                withTimeout(100L) { suspendTask() }
+            } catch(e: Exception) { e.printStackTrace() }
+            // suspend関数の処理がtimeoutしたらnullを返す
+            withTimeoutOrNull(100L) { suspendTask() } ?: println("Timeout")
+        }
+    }
+    private suspend fun suspendTask() {
+        println("suspendTask")
+        delay(1000L)
     }
     private fun syncTask() {
         println("start sync task")
