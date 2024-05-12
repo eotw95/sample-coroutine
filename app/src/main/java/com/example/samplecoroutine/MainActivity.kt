@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.samplecoroutine.ui.theme.SampleCoroutineTheme
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -139,6 +140,29 @@ class MainActivity : ComponentActivity() {
     private suspend fun suspendTask() {
         println("suspendTask")
         delay(1000L)
+    }
+    private fun asyncTask6() {
+        val scope = CoroutineScope(EmptyCoroutineContext)
+        scope.launch {
+            retryOrNull(10, 100L) { suspendTask() }
+        }
+    }
+    private suspend fun <T>retryOrNull(
+        retry: Int,
+        intervalMills: Long,
+        block: suspend () -> T
+    ): T? {
+        repeat(retry) {
+            try {
+                return block()
+            } catch (e: CancellationException) {
+                // coroutineをキャンセルしたい場合は、再throwしないとException発生しない
+                throw e
+            } catch (e: Throwable) {
+                delay(intervalMills)
+            }
+        }
+        return null
     }
     private fun syncTask() {
         println("start sync task")
