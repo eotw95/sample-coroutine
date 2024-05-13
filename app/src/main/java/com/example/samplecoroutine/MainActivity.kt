@@ -30,6 +30,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.yield
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    asyncTask5()
+                    asyncTask8()
 //                    syncTask()
                 }
             }
@@ -207,6 +208,25 @@ class MainActivity : ComponentActivity() {
                 ensureActive() // isActiveがfalseならCancellationExceptionをthrowする
             }
         }
+    }
+    private fun asyncTask8() {
+        val scope = CoroutineScope(EmptyCoroutineContext)
+        // CoroutineはThreadを共有している場合があるので、1つ目のCoroutineが完了するまで2つ目のCoroutineの実行が開始されない可能性がある。
+        // yield()で他のCoroutineに実行を譲るか、delay()等のsuspend関数で中断すれば、他のCoroutineに移る
+        // (Threadを共有するのは、既存のThread数よりも起動したCoroutineが多い時)
+        scope.launch {
+            println("first coroutine")
+            var i = 0
+            while (i <= 1_000_000) {
+                if (i % 1_000 == 0)  {
+                    println("$i")
+                    yield()
+                }
+                i++
+            }
+        }
+        scope.launch { println("second coroutine") }
+        println("completed asyncTask7")
     }
     private fun syncTask() {
         println("start sync task")
