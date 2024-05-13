@@ -24,6 +24,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -251,7 +252,7 @@ class MainActivity : ComponentActivity() {
             emit(1)
             delay(1000L)
             emit(2)
-        }
+        }.map { it + 1 } // Listのようにmap{}関数も使える
          runBlocking {
              flow.collect {
                  println("$it")
