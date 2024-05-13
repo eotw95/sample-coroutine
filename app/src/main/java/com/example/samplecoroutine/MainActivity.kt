@@ -23,6 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -244,5 +245,17 @@ class MainActivity : ComponentActivity() {
                 println("■■■■■■■■■■■■")
             }
         }
+    }
+    private fun sampleFlow1() {
+        val flow = flow {
+            emit(1)
+            delay(1000L)
+            emit(2)
+        }
+         runBlocking {
+             flow.collect {
+                 println("$it")
+             }
+         }
     }
 }
