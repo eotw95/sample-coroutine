@@ -23,6 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -257,6 +258,20 @@ class MainActivity : ComponentActivity() {
              flow.collect {
                  println("$it")
              }
+         }
+    }
+    private fun sampleFlow2() {
+        val flow = flow {
+            emit(1)
+            delay(1000L)
+            throw Exception("error")
+            delay(1000L)
+            emit(2)
+        }
+         runBlocking {
+             flow
+                 .catch { println("catch error: $it") } // catchでエラーハンドリングできて、以降Flowにデータが流れて来ることはない
+                 .collect { println("collect: $it") }
          }
     }
 }
