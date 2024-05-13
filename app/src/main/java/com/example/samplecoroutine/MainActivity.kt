@@ -22,6 +22,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -192,6 +193,20 @@ class MainActivity : ComponentActivity() {
             }
         }
         return null
+    }
+
+    // while{}内でscope.cancel()を実装してもcancelされずにループするので、ensureActive()でcoroutineの状態をチェックする
+    private fun asyncTask7() {
+        val scope = CoroutineScope(EmptyCoroutineContext)
+        scope.launch {
+            var i = 0
+            while (i <= 1_000_000) {
+                if (i % 1_000 == 0) println("$i")
+                if (i == 5_000) scope.cancel()
+                i ++
+                ensureActive() // isActiveがfalseならCancellationExceptionをthrowする
+            }
+        }
     }
     private fun syncTask() {
         println("start sync task")
